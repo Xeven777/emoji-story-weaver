@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import EmojiInput from "@/components/EmojiInput";
 import StoryCard from "@/components/StoryCard";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 const Index = () => {
   const [emojis, setEmojis] = useState<string[]>(Array(5).fill(""));
@@ -51,15 +52,17 @@ const Index = () => {
       if (!imageResponse.ok) throw new Error("Failed to generate image");
       const imageData = await imageResponse.json();
 
+      const storyToInsert = {
+        title: storyData.title,
+        content: storyData.content,
+        emojis: filledEmojis.join(""),
+        cover_url: imageData.url,
+      };
+
       // Save to Supabase with proper typing
       const { error } = await supabase
         .from('stories')
-        .insert({
-          title: storyData.title,
-          content: storyData.content,
-          emojis: filledEmojis.join(""),
-          cover_url: imageData.url,
-        });
+        .insert(storyToInsert);
 
       if (error) throw error;
 
