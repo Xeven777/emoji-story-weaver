@@ -32,7 +32,6 @@ const Index = () => {
 
     setIsGenerating(true);
     try {
-      // First, generate the story using AI
       const storyResponse = await fetch("/api/generate-story", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,7 +58,6 @@ const Index = () => {
         cover_url: imageData.url,
       };
 
-      // Save to Supabase with proper typing
       const { error } = await supabase
         .from('stories')
         .insert(storyToInsert);
