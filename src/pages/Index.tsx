@@ -51,13 +51,15 @@ const Index = () => {
       if (!imageResponse.ok) throw new Error("Failed to generate image");
       const imageData = await imageResponse.json();
 
-      // Save to Supabase
-      const { error } = await supabase.from("stories").insert({
-        title: storyData.title,
-        content: storyData.content,
-        emojis: filledEmojis.join(""),
-        cover_url: imageData.url,
-      });
+      // Save to Supabase with proper typing
+      const { error } = await supabase
+        .from('stories')
+        .insert({
+          title: storyData.title,
+          content: storyData.content,
+          emojis: filledEmojis.join(""),
+          cover_url: imageData.url,
+        });
 
       if (error) throw error;
 
