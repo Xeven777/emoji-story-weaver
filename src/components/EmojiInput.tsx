@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
 
 interface EmojiInputProps {
   value: string;
@@ -17,11 +16,11 @@ const EmojiInput = ({ value, onChange }: EmojiInputProps) => {
   };
 
   return (
-    <input
+    <Input
       type="text"
       value={value}
       onChange={handleInput}
-      className="emoji-input"
+      className="w-16 h-16 text-2xl text-center"
       placeholder="😊"
     />
   );

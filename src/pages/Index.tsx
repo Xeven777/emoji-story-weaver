@@ -1,14 +1,25 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import EmojiInput from "@/components/EmojiInput";
 import StoryCard from "@/components/StoryCard";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const Index = () => {
   const [emojis, setEmojis] = useState<string[]>(Array(5).fill(""));
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedStory, setGeneratedStory] = useState<{
+    title: string;
+    content: string;
+    coverUrl: string;
+    emojis: string;
+  } | null>(null);
 
   const handleEmojiChange = (index: number, value: string) => {
     const newEmojis = [...emojis];
@@ -24,9 +35,51 @@ const Index = () => {
     }
 
     setIsGenerating(true);
-    // TODO: Implement story generation after Supabase connection
-    toast.info("Coming soon! Connect to Supabase to enable story generation.");
-    setIsGenerating(false);
+    try {
+      // First, generate the story using AI
+      const storyResponse = await fetch("/api/generate-story", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emojis: filledEmojis }),
+      });
+
+      if (!storyResponse.ok) throw new Error("Failed to generate story");
+      const storyData = await storyResponse.json();
+
+      // Then, generate the cover image
+      const imageResponse = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: storyData.title }),
+      });
+
+      if (!imageResponse.ok) throw new Error("Failed to generate image");
+      const imageData = await imageResponse.json();
+
+      // Save to Supabase
+      const { error } = await supabase.from("stories").insert({
+        title: storyData.title,
+        content: storyData.content,
+        emojis: filledEmojis.join(""),
+        cover_url: imageData.url,
+      });
+
+      if (error) throw error;
+
+      setGeneratedStory({
+        title: storyData.title,
+        content: storyData.content,
+        coverUrl: imageData.url,
+        emojis: filledEmojis.join(""),
+      });
+
+      toast.success("Story generated successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to generate story. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -62,13 +115,17 @@ const Index = () => {
           </Card>
 
           <div className="grid gap-6">
-            <StoryCard
-              title="Example Story"
-              content="This is where your generated story will appear. Add some emojis and click generate to create your own magical tale!"
-              coverUrl="/placeholder.svg"
-              emojis="🌟 🌙 ✨"
-              isPlaceholder
-            />
+            {generatedStory ? (
+              <StoryCard {...generatedStory} />
+            ) : (
+              <StoryCard
+                title="Example Story"
+                content="This is where your generated story will appear. Add some emojis and click generate to create your own magical tale!"
+                coverUrl="/placeholder.svg"
+                emojis="🌟 🌙 ✨"
+                isPlaceholder
+              />
+            )}
           </div>
         </div>
       </div>
