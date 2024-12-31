@@ -4,12 +4,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import EmojiInput from "@/components/EmojiInput";
 import StoryCard from "@/components/StoryCard";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [emojis, setEmojis] = useState<string[]>(Array(5).fill(""));
