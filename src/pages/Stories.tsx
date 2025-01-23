@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Stories = () => {
   const {
@@ -52,28 +53,27 @@ const Stories = () => {
       </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stories?.map((story) => (
-          <Card
-            key={story.id}
-            className="overflow-hidden hover:shadow-lg hover:shadow-yellow-900/15 transition-shadow hover:border-primary/20"
-          >
-            <div className="aspect-[3/2] relative group overflow-hidden">
-              <img
-                src={story.cover_url}
-                alt={story.title}
-                className="object-cover size-full group-hover:scale-110 cursor-pointer"
-              />
-            </div>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                {story.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="line-clamp-4 font-light tracking-tight text-muted-foreground">
-                {story.content}
-              </p>
-            </CardContent>
-          </Card>
+          <Link to={`/stories/${story.id}`} key={story.id}>
+            <Card className="overflow-hidden hover:shadow-lg hover:shadow-yellow-900/15 transition-shadow hover:border-primary/20">
+              <div className="aspect-[3/2] relative group overflow-hidden">
+                <img
+                  src={story.cover_url}
+                  alt={story.title}
+                  className="object-cover size-full group-hover:scale-110 cursor-pointer"
+                />
+              </div>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {story.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="line-clamp-4 font-light tracking-tight text-muted-foreground">
+                  {story.content}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
