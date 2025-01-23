@@ -34,7 +34,9 @@ const StoryCard = ({
       <div className="p-6">
         <div className="text-2xl mb-2">{emojis}</div>
         <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground text-start">{content}</p>
+        <p className="text-muted-foreground text-start whitespace-break-spaces">
+          {content}
+        </p>
       </div>
     </Card>
   );
