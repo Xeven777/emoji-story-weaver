@@ -8,10 +8,9 @@ interface EmojiInputProps {
 const EmojiInput = ({ value, onChange }: EmojiInputProps) => {
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
-    // Only allow emoji characters
     const emojiRegex = /\p{Extended_Pictographic}/u;
     if (input === "" || emojiRegex.test(input)) {
-      onChange(input.slice(-1)); // Only keep the last character
+      onChange(input.slice(-1));
     }
   };
 
