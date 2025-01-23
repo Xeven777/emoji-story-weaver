@@ -6,10 +6,13 @@ export function Navbar() {
   return (
     <nav className="border-b sticky top-0 z-40 backdrop-blur-lg bg-background/20">
       <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        <Link to="/" className="font-bold text-lg">
-          😉Emoji Story Weaver
+        <Link to="/" className="font-bold text-lg inline-flex">
+          😉{" "}
+          <span className="md:block hidden hover:text-primary">
+            Emoji Story Weaver
+          </span>
         </Link>
-        <div className="space-x-4">
+        <div className="space-x-4 flex items-center">
           <Button variant="ghost" asChild>
             <Link to="/">
               <span>

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Stories from "./pages/Stories";
 import { Navbar } from "@/components/ui/navbar";
+import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ const App = () => (
         <Route path="/" element={<Index />} />
         <Route path="/stories" element={<Stories />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   </QueryClientProvider>
 );
