@@ -44,26 +44,27 @@ const Index = () => {
               {
                 parts: [
                   {
-                    text: `Create a short, whimsical story (max 300 words) based on these emojis: ${emojis.join(
+                    text: `Write a whimsical story (max 350 words) based on these emojis: ${emojis.join(
                       " "
-                    )}.`,
+                    )}. Return only a JSON object without any backticks or formatting.`,
                   },
                 ],
               },
             ],
             generationConfig: {
-              maxOutputTokens: 800,
+              maxOutputTokens: 500,
+              temperature: 0.8,
               response_mime_type: "application/json",
               response_schema: {
                 type: "OBJECT",
                 properties: {
                   title: {
                     type: "STRING",
-                    description: "Creative and catchy story title",
+                    description: "Story title",
                   },
                   content: {
                     type: "STRING",
-                    description: "Whimsical story content",
+                    description: "Story content",
                   },
                 },
                 required: ["title", "content"],
@@ -76,37 +77,67 @@ const Index = () => {
       if (!storyResponse.ok) throw new Error("Failed to generate story");
       const storyData = await storyResponse.json();
 
-      const storyText = storyData.candidates[0].content.parts[0].text;
+      const storyText = storyData.candidates[0].content.parts[0].text
+        .replace(/`/g, "")
+        .replace(/\\"/g, '"')
+        .trim();
 
-      const storyJson = JSON.parse(storyText);
+      let storyJson: { title: string; content: string };
+      try {
+        storyJson = JSON.parse(storyText) as {
+          title: string;
+          content: string;
+        };
+      } catch (e) {
+        console.error("JSON parsing error:", e);
+        throw new Error("Failed to parse story response");
+      }
 
-      // Generate cover image with the parsed title
-      const imageResponse = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: storyJson.title }),
-      });
+      const imageResponse = await fetch(
+        "https://ai-image-api.xeven.workers.dev/img?model=sdxl&prompt=" +
+          encodeURIComponent(
+            "Make a book cover art for story titled : " + storyJson.title
+          )
+      );
 
       if (!imageResponse.ok) throw new Error("Failed to generate image");
-      const imageData = await imageResponse.json();
+
+      const imgblob = await imageResponse.blob();
+      const imgUrl = URL.createObjectURL(imgblob);
+
+      setGeneratedStory({
+        title: storyJson.title,
+        content: storyJson.content,
+        coverUrl: imgUrl,
+        emojis: filledEmojis.join(""),
+      });
+
+      const { data, error: picUploadError } = await supabase.storage
+        .from("emoji-story")
+        .upload(
+          `${storyJson.title ?? (Math.random() * 10000).toString()}.png`,
+          imgblob,
+          {
+            contentType: "image/png",
+            cacheControl: "30000",
+            upsert: true,
+          }
+        );
+
+      const publicUrl = supabase.storage
+        .from("emoji-story")
+        .getPublicUrl(data?.path).data.publicUrl;
 
       const storyToInsert = {
         title: storyJson.title,
         content: storyJson.content,
         emojis: filledEmojis.join(""),
-        cover_url: imageData.url,
+        cover_url: publicUrl ?? data?.path ?? "",
       };
 
       const { error } = await supabase.from("stories").insert(storyToInsert);
 
-      if (error) throw error;
-
-      setGeneratedStory({
-        title: storyJson.title,
-        content: storyJson.content,
-        coverUrl: imageData.url,
-        emojis: filledEmojis.join(""),
-      });
+      if (error || picUploadError) throw error;
 
       toast.success("Story generated successfully!");
     } catch (error) {
