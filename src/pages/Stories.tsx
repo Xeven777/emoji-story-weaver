@@ -55,7 +55,7 @@ const Stories = () => {
             key={story.id}
             className="overflow-hidden hover:shadow-lg transition-shadow"
           >
-            <div className="aspect-[16/9] relative">
+            <div className="aspect-[3/2] relative">
               <img
                 src={story.cover_url}
                 alt={story.title}
