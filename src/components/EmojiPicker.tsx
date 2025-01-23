@@ -1,8 +1,7 @@
 import EmojiMartPicker from "@emoji-mart/react";
-import data, { Emoji } from "@emoji-mart/data";
+import data from "@emoji-mart/data";
 import { Button } from "./ui/button";
-import { useState } from "react";
-import { Cross, Delete } from "lucide-react";
+import { Delete } from "lucide-react";
 
 interface EmojiPickerProps {
   selectedEmojis: string[];
