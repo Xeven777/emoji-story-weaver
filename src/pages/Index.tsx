@@ -181,12 +181,15 @@ const EmojiStoryGenerator = () => {
             <h1 className="text-4xl mt-10 md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-primary/70">
               Emoji Story Generator
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-12">
+            <p className="text-lg md:text-xl px-6 text-muted-foreground mb-12">
               Transform your favorite emojis into magical stories with
               AI-powered storytelling
             </p>
-            <Card className="p-6 story-card mb-8">
-              <h2 className="text-xl mb-4">Choose up to {MAX_EMOJIS} emojis</h2>
+            <Card className="p-6 relative bg-gradient-to-b from-card via-primary/10 mb-8 overflow-hidden">
+              <div className="absolute top-0 h-px w-full bg-gradient-to-r via-primary"></div>
+              <h2 className="text-xl mb-4 opacity-90 mt-4">
+                Choose up to {MAX_EMOJIS} emojis
+              </h2>
               <div className="flex flex-wrap justify-center gap-4 mb-6">
                 <EmojiPicker
                   selectedEmojis={selectedEmojis}
@@ -208,7 +211,7 @@ const EmojiStoryGenerator = () => {
             </Card>
           </div>
 
-          <div className="grid gap-6">
+          <div className={isGenerating ? "animate-pulse" : ""}>
             {generatedStory ? (
               <StoryCard {...generatedStory} />
             ) : (

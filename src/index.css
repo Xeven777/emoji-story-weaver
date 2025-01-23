@@ -31,7 +31,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border transition-all duration-300;
   }
   body {
     @apply bg-background text-foreground;
@@ -54,9 +54,9 @@
 .gradient-bg {
   background: linear-gradient(
     45deg,
-    hsl(var(--primary) / 0.2),
+    hsl(var(--primary) / 0.3),
     hsl(var(--background)),
-    hsl(var(--primary) / 0.1)
+    hsl(var(--primary) / 0.2)
   );
   animation: gradient 15s ease infinite;
   background-size: 200% 200%;
@@ -72,13 +72,6 @@
   100% {
     background-position: 0% 50%;
   }
-}
-
-.story-card {
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  background: hsl(var(--card) / 0.8);
-  border: 1px solid hsl(var(--primary) / 0.2);
 }
 
 ::selection {

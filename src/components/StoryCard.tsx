@@ -16,7 +16,7 @@ const StoryCard = ({
   isPlaceholder,
 }: StoryCardProps) => {
   return (
-    <Card className="story-card overflow-hidden">
+    <Card className="overflow-hidden bg-background/50 backdrop-blur">
       <div className="aspect-[5/4] relative">
         <img
           src={coverUrl}
