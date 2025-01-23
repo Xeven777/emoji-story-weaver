@@ -6,6 +6,15 @@ import EmojiInput from "@/components/EmojiInput";
 import StoryCard from "@/components/StoryCard";
 import { supabase } from "@/integrations/supabase/client";
 
+function escapeEmoji(str: string) {
+  return Array.from(str)
+    .map((char) => {
+      const code = char.codePointAt(0);
+      return code && code > 0xffff ? `\\u{${code.toString(16)}}` : char;
+    })
+    .join("");
+}
+
 const Index = () => {
   const [emojis, setEmojis] = useState<string[]>(Array(5).fill(""));
   const [isGenerating, setIsGenerating] = useState(false);
@@ -136,7 +145,7 @@ const Index = () => {
       const storyToInsert = {
         title: storyJson.title,
         content: storyJson.content,
-        emojis: filledEmojis.join(""),
+        emojis: escapeEmoji(filledEmojis.join("")),
         cover_url: publicUrl ?? data?.path ?? "",
       };
 
