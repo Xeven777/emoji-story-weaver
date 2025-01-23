@@ -29,7 +29,7 @@ const EmojiPicker = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-72 sm:w-min overflow-x-auto">
       <div className="flex flex-wrap items-center justify-center gap-2 p-2 min-h-14 border rounded-md relative">
         {selectedEmojis.map((emoji, index) => (
           <span

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import StoryCard from "@/components/StoryCard";
 import { supabase } from "@/integrations/supabase/client";
 import EmojiPicker from "@/components/EmojiPicker";
+import { Loader2 } from "lucide-react";
 
 // Constants
 const MAX_EMOJIS = 5;
@@ -177,7 +178,7 @@ const EmojiStoryGenerator = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-7xl mx-auto text-center w-full gap-10 grid md:grid-cols-2">
           <div>
-            <h1 className="text-4xl mt-10 md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
+            <h1 className="text-4xl mt-10 md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary/90 to-primary/70">
               Emoji Story Generator
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-12">
@@ -200,6 +201,9 @@ const EmojiStoryGenerator = () => {
                 className="w-full md:w-auto"
               >
                 {isGenerating ? "Generating..." : "Generate Story"}
+                {isGenerating && (
+                  <Loader2 className="animate-spin ml-2" size={20} />
+                )}
               </Button>
             </Card>
           </div>

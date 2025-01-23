@@ -11,6 +11,7 @@ const App = () => (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Index />} />
+        
       </Routes>
     </BrowserRouter>
   </QueryClientProvider>
