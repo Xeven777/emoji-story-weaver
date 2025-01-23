@@ -2,72 +2,81 @@ import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import EmojiInput from "@/components/EmojiInput";
 import StoryCard from "@/components/StoryCard";
 import { supabase } from "@/integrations/supabase/client";
+import EmojiPicker from "@/components/EmojiPicker";
 
 // Constants
 const MAX_EMOJIS = 5;
 const MIN_EMOJIS_FOR_GENERATION = 2;
 
-// Utility Functions
-function escapeEmoji(str: string): string {
-  return Array.from(str)
-    .map((char) => {
-      const code = char.codePointAt(0);
-      return code && code > 0xffff ? `\\u{${code.toString(16)}}` : char;
-    })
-    .join("");
-}
+async function generateStory(emojis) {
+  try {
+    const apiKey = import.meta.env.VITE_GEMINI_KEY;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
 
-async function generateStory(
-  emojis: string[]
-): Promise<{ title: string; content: string }> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${
-      import.meta.env.VITE_GEMINI_KEY
-    }`,
-    {
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            {
+              text: `Write a whimsical story (max 350 words) based on these emojis: ${emojis.join(
+                " "
+              )}. Be creative and try different genres. Return only the perfect JSON object without any backticks or formatting.`,
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        maxOutputTokens: 500,
+        temperature: 0.8,
+        response_mime_type: "application/json",
+        response_schema: {
+          type: "OBJECT",
+          properties: {
+            title: { type: "STRING", description: "Story title" },
+            content: { type: "STRING", description: "Story content" },
+          },
+          required: ["title", "content"],
+        },
+      },
+    };
+
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: `Write a whimsical story (max 350 words) based on these emojis: ${emojis.join(
-                  " "
-                )}. Be creative and try different genres. Return only the perfect JSON object without any backticks or formatting.`,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          maxOutputTokens: 500,
-          temperature: 0.8,
-          response_mime_type: "application/json",
-          response_schema: {
-            type: "OBJECT",
-            properties: {
-              title: { type: "STRING", description: "Story title" },
-              content: { type: "STRING", description: "Story content" },
-            },
-            required: ["title", "content"],
-          },
-        },
-      }),
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status: ${response.status}`);
     }
-  );
 
-  if (!response.ok) throw new Error("Failed to generate story");
+    const responseData = await response.json();
+    const candidates = responseData?.candidates;
 
-  const responseData = await response.json();
-  const rawText = responseData.candidates[0].content.parts[0].text;
+    if (!candidates || !Array.isArray(candidates) || candidates.length === 0) {
+      throw new Error("No valid candidates received from the API.");
+    }
 
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("No valid JSON found");
+    const content = candidates[0]?.content?.parts?.[0]?.text;
 
-  return JSON.parse(jsonMatch[0].replace(/\\"/g, '"').replace(/\n/g, " "));
+    if (!content) {
+      throw new Error("Invalid content structure in API response.");
+    }
+
+    // Attempt to parse JSON from the returned text
+    try {
+      return JSON.parse(content);
+    } catch (jsonError) {
+      throw new Error(
+        `Failed to parse JSON from content: ${jsonError.message}. Content: ${content}`
+      );
+    }
+  } catch (error) {
+    console.error("Error generating story:", error.message);
+    throw error;
+  }
 }
 
 async function generateCoverImage(title: string): Promise<string> {
@@ -107,10 +116,10 @@ async function uploadStoryToSupabase(story: {
     .from("emoji-story")
     .getPublicUrl(uploadData?.path).data.publicUrl;
 
-  const { error, data } = await supabase.from("stories").insert({
+  const { error } = await supabase.from("stories").insert({
     title: story.title,
     content: story.content,
-    emojis: escapeEmoji(story.emojis),
+    emojis: story.emojis,
     cover_url: publicUrl ?? uploadData?.path ?? "",
   });
 
@@ -120,7 +129,6 @@ async function uploadStoryToSupabase(story: {
 }
 
 const EmojiStoryGenerator = () => {
-  const [emojis, setEmojis] = useState<string[]>(Array(MAX_EMOJIS).fill(""));
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedStory, setGeneratedStory] = useState<{
     title: string;
@@ -128,19 +136,10 @@ const EmojiStoryGenerator = () => {
     coverUrl: string;
     emojis: string;
   } | null>(null);
-
-  const handleEmojiChange = useCallback((index: number, value: string) => {
-    setEmojis((prev) => {
-      const newEmojis = [...prev];
-      newEmojis[index] = value;
-      return newEmojis;
-    });
-  }, []);
+  const [selectedEmojis, setSelectedEmojis] = useState<string[]>([]);
 
   const handleGenerate = useCallback(async () => {
-    const filledEmojis = emojis.filter((emoji) => emoji.trim() !== "");
-
-    if (filledEmojis.length < MIN_EMOJIS_FOR_GENERATION) {
+    if (selectedEmojis.length < MIN_EMOJIS_FOR_GENERATION) {
       toast.error(
         `Please add at least ${MIN_EMOJIS_FOR_GENERATION} emojis to generate a story!`
       );
@@ -150,7 +149,7 @@ const EmojiStoryGenerator = () => {
     setIsGenerating(true);
 
     try {
-      const storyJson = await generateStory(filledEmojis);
+      const storyJson = await generateStory(selectedEmojis);
       const coverUrl = await generateCoverImage(
         storyJson.title ?? "Untitled Story"
       );
@@ -159,12 +158,10 @@ const EmojiStoryGenerator = () => {
         title: storyJson.title,
         content: storyJson.content,
         coverUrl,
-        emojis: filledEmojis.join(""),
+        emojis: selectedEmojis.join(""),
       };
 
-      // Generate and save story
       await uploadStoryToSupabase(storyData);
-
       setGeneratedStory(storyData);
       toast.success("Story generated successfully!");
     } catch (error) {
@@ -173,19 +170,7 @@ const EmojiStoryGenerator = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [emojis]);
-
-  const emojiInputs = useMemo(
-    () =>
-      emojis.map((emoji, index) => (
-        <EmojiInput
-          key={index}
-          value={emoji}
-          onChange={(value) => handleEmojiChange(index, value)}
-        />
-      )),
-    [emojis, handleEmojiChange]
-  );
+  }, [selectedEmojis]);
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -202,7 +187,11 @@ const EmojiStoryGenerator = () => {
             <Card className="p-6 story-card mb-8">
               <h2 className="text-xl mb-4">Choose up to {MAX_EMOJIS} emojis</h2>
               <div className="flex flex-wrap justify-center gap-4 mb-6">
-                {emojiInputs}
+                <EmojiPicker
+                  selectedEmojis={selectedEmojis}
+                  setSelectedEmojis={setSelectedEmojis}
+                  maxEmojis={MAX_EMOJIS}
+                />
               </div>
               <Button
                 size="lg"
