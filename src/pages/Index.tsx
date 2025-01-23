@@ -32,7 +32,7 @@ const Index = () => {
 
     try {
       const storyResponse = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=" +
           import.meta.env.VITE_GEMINI_KEY,
         {
           method: "POST",
@@ -46,7 +46,7 @@ const Index = () => {
                   {
                     text: `Write a whimsical story (max 350 words) based on these emojis: ${emojis.join(
                       " "
-                    )}. Return only a JSON object without any backticks or formatting.`,
+                    )}.Be creative and try different genres. Return only a JSON object without any backticks or formatting.`,
                   },
                 ],
               },
@@ -78,8 +78,9 @@ const Index = () => {
       const storyData = await storyResponse.json();
 
       const storyText = storyData.candidates[0].content.parts[0].text
-        .replace(/`/g, "")
         .replace(/\\"/g, '"')
+        .replace(/`/g, "")
+        .replace(/\n/g, " ")
         .trim();
 
       let storyJson: { title: string; content: string };
@@ -94,7 +95,7 @@ const Index = () => {
       }
 
       const imageResponse = await fetch(
-        "https://ai-image-api.xeven.workers.dev/img?model=sdxl&prompt=" +
+        "https://ai-image-api.xeven.workers.dev/img?model=flux-schnell&prompt=" +
           encodeURIComponent(
             "Make a book cover art for story titled : " + storyJson.title
           )
@@ -112,17 +113,17 @@ const Index = () => {
         emojis: filledEmojis.join(""),
       });
 
+      const safeFileName = (storyJson.title ?? Date.now().toString())
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-");
+
       const { data, error: picUploadError } = await supabase.storage
         .from("emoji-story")
-        .upload(
-          `${storyJson.title ?? (Math.random() * 10000).toString()}.png`,
-          imgblob,
-          {
-            contentType: "image/png",
-            cacheControl: "30000",
-            upsert: true,
-          }
-        );
+        .upload(`public/${safeFileName}.png`, imgblob, {
+          contentType: "image/png",
+          cacheControl: "30000",
+          upsert: true,
+        });
 
       const publicUrl = supabase.storage
         .from("emoji-story")
@@ -151,35 +152,36 @@ const Index = () => {
   return (
     <div className="min-h-screen gradient-bg">
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
-            Emoji Story Generator
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-12">
-            Transform your favorite emojis into magical stories with AI-powered
-            storytelling
-          </p>
-
-          <Card className="p-6 story-card mb-8">
-            <h2 className="text-xl mb-4">Choose up to 5 emojis</h2>
-            <div className="flex flex-wrap justify-center gap-4 mb-6">
-              {emojis.map((emoji, index) => (
-                <EmojiInput
-                  key={index}
-                  value={emoji}
-                  onChange={(value) => handleEmojiChange(index, value)}
-                />
-              ))}
-            </div>
-            <Button
-              size="lg"
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="w-full md:w-auto"
-            >
-              {isGenerating ? "Generating..." : "Generate Story"}
-            </Button>
-          </Card>
+        <div className="max-w-7xl mx-auto text-center w-full gap-10 grid md:grid-cols-2">
+          <div>
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
+              Emoji Story Generator
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-12">
+              Transform your favorite emojis into magical stories with
+              AI-powered storytelling
+            </p>
+            <Card className="p-6 story-card mb-8">
+              <h2 className="text-xl mb-4">Choose up to 5 emojis</h2>
+              <div className="flex flex-wrap justify-center gap-4 mb-6">
+                {emojis.map((emoji, index) => (
+                  <EmojiInput
+                    key={index}
+                    value={emoji}
+                    onChange={(value) => handleEmojiChange(index, value)}
+                  />
+                ))}
+              </div>
+              <Button
+                size="lg"
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="w-full md:w-auto"
+              >
+                {isGenerating ? "Generating..." : "Generate Story"}
+              </Button>
+            </Card>
+          </div>
 
           <div className="grid gap-6">
             {generatedStory ? (
