@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import EmojiInput from "@/components/EmojiInput";
 import StoryCard from "@/components/StoryCard";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 
 const Index = () => {
   const [emojis, setEmojis] = useState<string[]>(Array(5).fill(""));
@@ -24,49 +23,87 @@ const Index = () => {
   };
 
   const handleGenerate = async () => {
-    const filledEmojis = emojis.filter(emoji => emoji.trim() !== "");
+    const filledEmojis = emojis.filter((emoji) => emoji.trim() !== "");
     if (filledEmojis.length < 2) {
       toast.error("Please add at least 2 emojis to generate a story!");
       return;
     }
-
     setIsGenerating(true);
+
     try {
-      const storyResponse = await fetch("/api/generate-story", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emojis: filledEmojis }),
-      });
+      const storyResponse = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+          import.meta.env.VITE_GEMINI_KEY,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: `Create a short, whimsical story (max 300 words) based on these emojis: ${emojis.join(
+                      " "
+                    )}.`,
+                  },
+                ],
+              },
+            ],
+            generationConfig: {
+              maxOutputTokens: 800,
+              response_mime_type: "application/json",
+              response_schema: {
+                type: "OBJECT",
+                properties: {
+                  title: {
+                    type: "STRING",
+                    description: "Creative and catchy story title",
+                  },
+                  content: {
+                    type: "STRING",
+                    description: "Whimsical story content",
+                  },
+                },
+                required: ["title", "content"],
+              },
+            },
+          }),
+        }
+      );
 
       if (!storyResponse.ok) throw new Error("Failed to generate story");
       const storyData = await storyResponse.json();
 
-      // Then, generate the cover image
+      const storyText = storyData.candidates[0].content.parts[0].text;
+
+      const storyJson = JSON.parse(storyText);
+
+      // Generate cover image with the parsed title
       const imageResponse = await fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: storyData.title }),
+        body: JSON.stringify({ prompt: storyJson.title }),
       });
 
       if (!imageResponse.ok) throw new Error("Failed to generate image");
       const imageData = await imageResponse.json();
 
       const storyToInsert = {
-        title: storyData.title,
-        content: storyData.content,
+        title: storyJson.title,
+        content: storyJson.content,
         emojis: filledEmojis.join(""),
         cover_url: imageData.url,
       };
 
-      const { error } = await supabase
-        .from('stories')
-        .insert(storyToInsert);
+      const { error } = await supabase.from("stories").insert(storyToInsert);
 
       if (error) throw error;
 
       setGeneratedStory({
-        title: storyData.title,
-        content: storyData.content,
+        title: storyJson.title,
+        content: storyJson.content,
         coverUrl: imageData.url,
         emojis: filledEmojis.join(""),
       });
@@ -88,7 +125,8 @@ const Index = () => {
             Emoji Story Generator
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-12">
-            Transform your favorite emojis into magical stories with AI-powered storytelling
+            Transform your favorite emojis into magical stories with AI-powered
+            storytelling
           </p>
 
           <Card className="p-6 story-card mb-8">
