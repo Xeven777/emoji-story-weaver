@@ -32,7 +32,7 @@ const Index = () => {
 
     try {
       const storyResponse = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=" +
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=" +
           import.meta.env.VITE_GEMINI_KEY,
         {
           method: "POST",
@@ -46,7 +46,7 @@ const Index = () => {
                   {
                     text: `Write a whimsical story (max 350 words) based on these emojis: ${emojis.join(
                       " "
-                    )}.Be creative and try different genres. Return only a JSON object without any backticks or formatting.`,
+                    )}.Be creative and try different genres. Return only the perfect JSON object without any backticks or formatting as given. `,
                   },
                 ],
               },
@@ -77,7 +77,11 @@ const Index = () => {
       if (!storyResponse.ok) throw new Error("Failed to generate story");
       const storyData = await storyResponse.json();
 
-      const storyText = storyData.candidates[0].content.parts[0].text
+      const rawText = storyData.candidates[0].content.parts[0].text;
+      const startIndex = rawText.indexOf("{");
+      const endIndex = rawText.lastIndexOf("}");
+      const storyText = rawText
+        .substring(startIndex, endIndex + 1)
         .replace(/\\"/g, '"')
         .replace(/`/g, "")
         .replace(/\n/g, " ")
@@ -136,6 +140,8 @@ const Index = () => {
         cover_url: publicUrl ?? data?.path ?? "",
       };
 
+      console.log({ storyToInsert });
+
       const { error } = await supabase.from("stories").insert(storyToInsert);
 
       if (error || picUploadError) throw error;
@@ -154,7 +160,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-7xl mx-auto text-center w-full gap-10 grid md:grid-cols-2">
           <div>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
+            <h1 className="text-4xl mt-10 md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
               Emoji Story Generator
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-12">
