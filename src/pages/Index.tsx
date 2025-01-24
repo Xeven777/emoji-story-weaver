@@ -21,16 +21,16 @@ async function generateStory(emojis) {
         {
           parts: [
             {
-              text: `Write a whimsical story (max 350 words) based on these emojis: ${emojis.join(
+              text: `write a nice story. (max 350 words) based on these emojis: ${emojis.join(
                 " "
-              )}. Be creative and try different genres. Return only the perfect JSON object without any backticks or formatting.`,
+              )}.Please choose a genre, such as science fiction, fantasy, or adventure, and craft a tale that incorporates all of the emojis in a creative and meaningful way. Be creative and try different genres and names from different cultures. Return only the perfect JSON object without any backticks or formatting.`,
             },
           ],
         },
       ],
       generationConfig: {
         maxOutputTokens: 500,
-        temperature: 0.8,
+        temperature: 0.5,
         response_mime_type: "application/json",
         response_schema: {
           type: "OBJECT",
