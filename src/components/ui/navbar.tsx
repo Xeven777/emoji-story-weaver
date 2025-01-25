@@ -12,7 +12,7 @@ export function Navbar() {
             Emoji Story Weaver
           </span>
         </Link>
-        <div className="space-x-4 flex items-center">
+        <div className="md:gap-4 flex items-center">
           <Button variant="ghost" asChild>
             <Link to="/">
               <span>

@@ -17,7 +17,7 @@ const Footer = () => {
         <p>
           Made with ❤️ by{" "}
           <a
-            href="anish7.me"
+            href="https://anish7.me"
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline"

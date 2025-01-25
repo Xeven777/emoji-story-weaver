@@ -40,8 +40,8 @@ const Stories = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
-        Error loading stories
+      <div className="py-60 flex items-center justify-center text-5xl mx-auto text-center tracking-tighter text-red-500 font-medium">
+        Error loading stories!
       </div>
     );
   }
