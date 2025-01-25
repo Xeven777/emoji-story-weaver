@@ -98,7 +98,7 @@ const StoryDetail = () => {
             )}
           </Button>
 
-          <p className="text-lg px-1 md:text-lg leading-relaxed whitespace-pre-wrap opacity-90">
+          <p className="px-1 md:text-lg leading-relaxed whitespace-pre-wrap opacity-90">
             {story.content}
           </p>
         </div>

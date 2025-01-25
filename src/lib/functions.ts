@@ -70,10 +70,13 @@ async function generateStory(
   }
 }
 
-async function generateCoverImage(title: string): Promise<string> {
+async function generateCoverImage(
+  title: string,
+  line: string
+): Promise<string> {
   const response = await fetch(
     `https://ai-image-api.xeven.workers.dev/img?model=flux-schnell&prompt=${encodeURIComponent(
-      "Make a book cover art for story titled: " + title
+      "book cover art for story titled: " + title + " that starts with :" + line
     )}`
   );
 

@@ -50,7 +50,8 @@ const EmojiStoryGenerator = () => {
 
       // Generate cover image
       const coverUrl = await generateCoverImage(
-        storyJson.title ?? "Untitled Story"
+        storyJson.title ?? "Untitled Story",
+        storyJson.content.split(".")[0]
       );
       const storyData = {
         ...storyJson,
