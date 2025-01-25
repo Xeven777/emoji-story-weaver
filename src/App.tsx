@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "@/components/ui/navbar";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
+import { Loader } from "lucide-react";
 const Stories = lazy(() => import("./pages/Stories"));
 const StoryDetail = lazy(() => import("./pages/StoryDetail"));
 
@@ -15,7 +16,13 @@ const App = () => (
     <Sonner richColors />
     <BrowserRouter>
       <Navbar />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen w-full grid place items-center">
+            <Loader className="size-10 animate-spin ease-in-out" />
+          </div>
+        }
+      >
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/stories" element={<Stories />} />
