@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader, Loader2, Volume2, VolumeX } from "lucide-react";
+import { Loader, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
