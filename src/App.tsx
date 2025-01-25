@@ -19,7 +19,7 @@ const App = () => (
       <Navbar />
       <Suspense
         fallback={
-          <div className="min-h-screen w-full grid place items-center">
+          <div className="min-h-screen w-full grid place-items-center">
             <Loader className="size-10 animate-spin ease-in-out" />
           </div>
         }

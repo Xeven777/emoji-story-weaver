@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Volume2, VolumeX } from "lucide-react";
+import { Loader, Loader2, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
@@ -20,6 +20,8 @@ const StoryDetail = () => {
     title: string;
   }>({
     queryKey: ["story", id],
+    gcTime: 1000 * 600,
+    staleTime: Infinity,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stories")
@@ -56,7 +58,7 @@ const StoryDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="animate-spin size-10" />
+        <Loader className="animate-spin size-10 ease-in-out" />
       </div>
     );
   }
@@ -72,11 +74,13 @@ const StoryDetail = () => {
             alt={story.title}
             className="object-cover w-full h-full"
           />
-          <div className="bottom-0 right-0 absolute z-20 text-3xl md:text-4xl bg-white/10 backdrop-blur-xl p-4 rounded-2xl">{story.emojis}</div>
+          <div className="bottom-0 right-0 absolute z-20 text-2xl md:text-4xl bg-white/10 backdrop-blur-xl p-2 md:p-4 rounded-2xl">
+            {story.emojis}
+          </div>
         </div>
 
         <div className="space-y-4">
-          <h1 className="text-4xl md:text-6xl font-bold">{story.title}</h1>
+          <h1 className="text-3xl md:text-6xl font-bold">{story.title}</h1>
           <Button
             variant="outline"
             size="lg"
@@ -94,7 +98,7 @@ const StoryDetail = () => {
             )}
           </Button>
 
-          <p className="text-lg leading-relaxed whitespace-pre-wrap opacity-90">
+          <p className="text-lg px-1 md:text-lg leading-relaxed whitespace-pre-wrap opacity-90">
             {story.content}
           </p>
         </div>

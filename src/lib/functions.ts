@@ -98,7 +98,7 @@ async function uploadStoryToSupabase(story: {
     .upload(
       `public/${safeFileName}.png`,
       await (await fetch(story.coverUrl)).blob(),
-      { contentType: "image/png", cacheControl: "30000", upsert: true }
+      { contentType: "image/png", cacheControl: "90000", upsert: true }
     );
 
   if (picUploadError) throw picUploadError;

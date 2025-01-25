@@ -19,6 +19,9 @@ const Stories = () => {
     }[]
   >({
     queryKey: ["stories"],
+    networkMode: "offlineFirst",
+    gcTime: 1000 * 60,
+    staleTime: Infinity,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stories")
