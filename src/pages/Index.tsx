@@ -1,16 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-import StoryCard from "@/components/StoryCard";
-import EmojiPicker from "@/components/EmojiPicker";
 import { Loader2 } from "lucide-react";
 import {
   generateCoverImage,
   generateStory,
   uploadStoryToSupabase,
 } from "@/lib/functions";
-import { set } from "date-fns";
+import { toast } from "sonner";
+
+const EmojiPicker = lazy(() => import("@/components/EmojiPicker"));
+const StoryCard = lazy(() => import("@/components/StoryCard"));
+const Card = lazy(() =>
+  import("@/components/ui/card").then((mod) => ({ default: mod.Card }))
+);
 
 const MAX_EMOJIS = 5;
 const MIN_EMOJIS_FOR_GENERATION = 2;

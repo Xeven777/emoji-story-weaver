@@ -6,6 +6,7 @@ import { Navbar } from "@/components/ui/navbar";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
 import { Loader } from "lucide-react";
+
 const Stories = lazy(() => import("./pages/Stories"));
 const StoryDetail = lazy(() => import("./pages/StoryDetail"));
 
