@@ -5,7 +5,7 @@ async function generateStory(
 ): Promise<{ title: string; content: string }> {
   try {
     const apiKey = import.meta.env.VITE_GEMINI_KEY;
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
     const requestBody = {
       contents: [
